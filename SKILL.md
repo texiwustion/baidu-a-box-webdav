@@ -9,7 +9,7 @@ This is a project-specific skill for moving files through the OpenList WebDAV mo
 
 - Baidu Netdisk internal directory: `/a-box`
 - OpenList mount path: `/bd`
-- WebDAV root for agents: value of `WEBDAV_BASE_URL` in `.local/baidu-a-box-webdav.env`
+- WebDAV root for agents: value of `WEBDAV_BASE_URL` in config env file
 
 ## Use This Skill When
 
@@ -19,7 +19,14 @@ This is a project-specific skill for moving files through the OpenList WebDAV mo
 
 ## Required Local Config
 
-Read `.local/baidu-a-box-webdav.env` and export:
+By default, the script reads:
+
+1. `.env` in the skill root (preferred)
+2. fallback `.local/baidu-a-box-webdav.env` in workspace root (legacy)
+
+You can override with `WEBDAV_CONFIG_FILE=/path/to/config.env`.
+
+Required variables:
 
 - `WEBDAV_BASE_URL`
 - `WEBDAV_USERNAME`
@@ -48,7 +55,7 @@ bash .codex/skills/baidu-a-box-webdav/scripts/a-box-webdav.sh delete remote-file
 
 ## Workflow
 
-1. Source `.local/baidu-a-box-webdav.env`.
+1. Ensure `.env` exists in skill root (or set `WEBDAV_CONFIG_FILE`).
 2. Run `check`.
 3. If the task is ambiguous, run `list` first so the user and agent are talking about the same file set.
 4. Upload with `upload <local_path> [remote_name]`.

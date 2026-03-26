@@ -1,11 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
-CONFIG_FILE="${WEBDAV_CONFIG_FILE:-$ROOT_DIR/.local/baidu-a-box-webdav.env}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Support both layouts:
+# 1) skill checkout repo: <repo>/scripts/a-box-webdav.sh
+# 2) embedded project skill: <project>/.codex/skills/baidu-a-box-webdav/scripts/a-box-webdav.sh
+if [[ "$(basename "$(dirname "$SKILL_ROOT")")" == "skills" && "$(basename "$(dirname "$(dirname "$SKILL_ROOT")")")" == ".codex" ]]; then
+  ROOT_DIR="$(cd "$SKILL_ROOT/../../.." && pwd)"
+else
+  ROOT_DIR="$SKILL_ROOT"
+fi
+
+DEFAULT_ENV_FILE="$SKILL_ROOT/.env"
+LEGACY_ENV_FILE="$ROOT_DIR/.local/baidu-a-box-webdav.env"
+
+if [[ -n "${WEBDAV_CONFIG_FILE:-}" ]]; then
+  CONFIG_FILE="$WEBDAV_CONFIG_FILE"
+elif [[ -f "$DEFAULT_ENV_FILE" ]]; then
+  CONFIG_FILE="$DEFAULT_ENV_FILE"
+else
+  CONFIG_FILE="$LEGACY_ENV_FILE"
+fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
-  echo "Missing config file: $CONFIG_FILE" >&2
+  cat >&2 <<EOF
+Missing config file: $CONFIG_FILE
+Expected one of:
+  - $DEFAULT_ENV_FILE
+  - $LEGACY_ENV_FILE
+Or set WEBDAV_CONFIG_FILE=/path/to/config.env
+EOF
   exit 1
 fi
 
